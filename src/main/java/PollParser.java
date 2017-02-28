@@ -47,8 +47,12 @@ public class PollParser {
          */
 
 
+        if(args.length < 2 || !args[1].endsWith(".csv"))
+        {
+            throw new IllegalArgumentException();
+        }
 
-        String ballotsFilePath = "/Users/jamesfallon/Documents/FYP/Vote Generator/results/EliminationTestBallots.csv";
+        String ballotsFilePath = args[1];
 
         List<Ballot> ballots = new ArrayList<>();
 
@@ -81,9 +85,9 @@ public class PollParser {
 
         System.out.println("Candidates: " + candidates.size());
         System.out.println("Ballots: " + ballots.size());
-        //Run count
 
-        Count count = new Count(2, ballots, candidates);
+        //Run count
+        Count count = new Count(Integer.parseInt(args[0]), ballots, candidates);
 
         List<Candidate> electedCandidates = count.runCount();
 
