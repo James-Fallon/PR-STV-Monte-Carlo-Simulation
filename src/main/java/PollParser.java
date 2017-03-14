@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -37,6 +34,7 @@ public class PollParser {
                 candidateIds.put(Integer.valueOf(lineEntries[0]), candidate);
                 candidates.add(candidate);
             }
+            bufferedReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -45,7 +43,6 @@ public class PollParser {
          *
          * Parse ballots from file
          */
-
 
         if(args.length < 2 || !args[1].endsWith(".csv"))
         {
@@ -78,6 +75,7 @@ public class PollParser {
 
                 ballots.add(new Ballot(preferences));
             }
+            ballotsBufferedReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -100,13 +98,32 @@ public class PollParser {
         System.out.println();
         System.out.println("Elected Candidates: ");
         System.out.println("-----------------------");
+        //File electedCandidatesFile = new File("/Users/jamesfallon/Documents/FYP/Vote Generator/results/electedCandidates.csv");
+        //BufferedWriter bufferedWriter = null;
 
+            //bufferedWriter = new BufferedWriter(new FileWriter(electedCandidatesFile));
+
+
+            for(Candidate candidate : electedCandidates)
+            {
+
+                System.out.println(candidate.getId()+","+candidate.getForename() + " " + candidate.getSurname() + ": " + candidate.getVoteCount());
+               // bufferedWriter.write(candidate.getId()+","+candidate.getSurname()+","+candidate.getForename()+","+candidate.getVoteCount());
+               // bufferedWriter.newLine();
+            }
+           // bufferedWriter.close();
+            System.out.println("-----------------------");
+
+
+        /**
+         * Print results in a format that our python script can eat
+         */
+        System.out.print("For python script:\n!!");
         for(Candidate candidate : electedCandidates)
         {
-            System.out.println(candidate.getForename() + " " + candidate.getSurname() + ": " + candidate.getVoteCount());
+            System.out.println(candidate.getId() + ","+candidate.getVoteCount());
         }
-
-        System.out.println("-----------------------");
+        System.out.print("!!");
 
     }
 }

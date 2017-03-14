@@ -23,7 +23,6 @@ public class Count {
 
     public List<Candidate> runCount ()
     {
-        //TODO - Use stack for transferred ballots
 
         //Calculate quota
         quota = (ballots.size()/(numberOfSeats+1)) +1;
@@ -48,6 +47,7 @@ public class Count {
         System.out.println("----------------------");
 
 
+        Map<Candidate, Integer> voteCountFromLastRun = new HashMap<>();
         int runNumber = 1;
         //Keep running counts until the seats are filled
         while(electedCandidates.size() < numberOfSeats) {
@@ -56,6 +56,23 @@ public class Count {
 
             System.out.println("\nRun: " + runNumber );
             runNumber++;
+
+            System.out.println("Votes per candidate:");
+            System.out.println("----------------------");
+            for(Candidate candidate : candidates)
+            {
+                int voteTallyFromLastRun = 0;
+                if(voteCountFromLastRun.containsKey(candidate)
+                        )
+                {
+                    voteTallyFromLastRun = voteCountFromLastRun.get(candidate);
+                }
+                int voteTally = candidate.getVoteCount();
+                System.out.println(candidate.getSurname() + ": " + voteTally + " (" + (voteTally - voteTallyFromLastRun) + ")");
+                voteCountFromLastRun.put(candidate, candidate.getVoteCount());
+            }
+            System.out.println("----------------------");
+
 
             List<Ballot> ballotsToBeTransferred = new ArrayList<>();
 
@@ -69,8 +86,9 @@ public class Count {
 
 
             boolean haveAnyCandidatesBeenElected = false;
-
+/*
             List<Candidate> electedOnThisCount = new ArrayList<>();
+
 
             Iterator<Candidate> candidateIterator = candidates.iterator();
             while (candidateIterator.hasNext()) {
@@ -95,23 +113,35 @@ public class Count {
                     candidateIterator.remove();
                     //TODO - Need to add ballots after count
                 }
+        }
+                */
 
-            }
 
-            //Otherwise we eliminate the bottom candidate
+            Candidate highestContinuingCandidate = candidates.get(candidates.size()-1);
+
+            //If the number of candidates remaining is equal to the number of seats left to fill,
+            //elect all remaining candidates
             if(candidates.size() == (numberOfSeats - electedCandidates.size()))
             {
                 electedCandidates.addAll(candidates);
             }
-            else if(haveAnyCandidatesBeenElected == false){
-                //If no candidate has reached the quota and there are still more candidates than seat vacancies,
-                /*Eliminate the bottom candidate
-                Candidate candidateToEliminate = candidates.get(0);
-                candidateToEliminate.setEliminated(true);
-                System.out.println(candidateToEliminate.getForename() + " " + candidateToEliminate.getSurname() + " eliminated.");
-                transferEliminatedCandidatesVotes(candidateToEliminate.getBallots());
-                candidates.remove(candidateToEliminate);*/
+            else if (highestContinuingCandidate.getVoteCount() >= quota) {
+                highestContinuingCandidate.setElected(true);
 
+                System.out.println(highestContinuingCandidate.getForename() + " " + highestContinuingCandidate.getSurname() + " elected.");
+
+                //Redistribute ballots if required
+                int surplus = highestContinuingCandidate.getVoteCount() - quota;
+                List<Ballot> votesToRedistribute = highestContinuingCandidate.getBallots();
+
+                transferSurplus(votesToRedistribute, surplus);
+
+                candidates.remove(highestContinuingCandidate);
+                electedCandidates.add(highestContinuingCandidate);
+            }
+            else {
+                //If no candidate has reached the quota and there are still more candidates than seat
+                // vacancies eliminate the bottom candidate.
 
                 /**
                  * Here we eliminate candidates until we have enough votes
@@ -120,7 +150,6 @@ public class Count {
 
                 int minimumRequiredVotesToElectCandidate = quota - candidates.get(candidates.size()-1).getVoteCount();
                 int surplusAmount = 0;
-
 
                 List<Candidate> eliminatedCandidates = new ArrayList<>();
                 int i = 0;
@@ -140,10 +169,6 @@ public class Count {
 
             }
 
-
-
-            //TODO - Transfer ballots + print relevant details.
-
         }
 
         return electedCandidates;
@@ -156,6 +181,9 @@ public class Count {
 
         List<Ballot> transferableBallots = ballots.stream().filter(Ballot::isTransferable).collect(Collectors.toList());
 
+        System.out.println("Surplus: " + surplus);
+        System.out.println("Candidate total ballots: " + ballots.size());
+        System.out.println("Transferable ballots: " + transferableBallots.size());
 
         if(surplus < transferableBallots.size())
         {

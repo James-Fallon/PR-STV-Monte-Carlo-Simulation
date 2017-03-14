@@ -23,4 +23,42 @@
         </dependency>
     </dependencies>
 
+
+    <profiles>
+        <profile>
+            <id>galway-west</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>PollParser</mainClass>
+                                    <arguments>
+                                        <argument>5</argument>
+                                        <argument>/Users/jamesfallon/IdeaProjects/PR-STV-Software-Model/src/main/resources/ballots.csv</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

@@ -41,7 +41,6 @@ public class Ballot {
                 return true;
             }
         }
-
         return false;
     }
 
