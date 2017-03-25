@@ -4,7 +4,7 @@ import java.util.*;
 /**
  * Created by jamesfallon on 09/01/2017.
  */
-public class PollParser {
+public class BallotsParser {
 
     public static void main (String args[])
     {
