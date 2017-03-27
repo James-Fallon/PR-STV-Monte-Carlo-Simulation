@@ -1,10 +1,13 @@
-import ballotsgenerator
+import ballotsgenerator, printresults
 import numpy as np,csv,os.path,subprocess,operator,copy
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.plotly as pltly
+import plotly.graph_objs as go
 import pylab
+import webbrowser
 from subprocess import STDOUT,PIPE
 
 'Parse Candidate Data'
@@ -28,9 +31,6 @@ for party in parties:
         if candidate[3] == party:
             candidatesInThisParty.append(candidate[0])
     candidatesPerParty[party] = candidatesInThisParty
-
-
-
 
 def generateCandidateSupportProportions():
     #Account for simple random sampling error
@@ -123,7 +123,7 @@ def generateVoteTransferProportions():
 
 #samplesize = 515
 marginOfError = 0.028
-numberOfRuns = 50
+numberOfRuns = 30
 numberOfWinsPerCandidate = {candidate[0]:0 for candidate in candidateData}
 
 outcomeFrequencys = {}
@@ -182,16 +182,13 @@ for key in outcomeFrequencys:
         highestOutcomeFrequency = outcomeFrequencys[key]
         mostCommonOutcome = key
 
-outcomeResult = "Most common outcome: \n %r "
-print 'Most common outcome:'
-print mostCommonOutcome + ': ' + outcomeFrequencys[mostCommonOutcome]
+outcomeResult = "Most common outcome: \n%r\n with %r occurrences" % (mostCommonOutcome,outcomeFrequencys[mostCommonOutcome])
+
+print outcomeResult
+
+mostCommonOutcome = list(mostCommonOutcome)
 
 candidates = [x[2] + ' ' + x[1] for x in candidateData]
-datafr = pd.DataFrame()
-datafr['Candidates'] = candidates
-datafr['Chance of winning'] = percentageOfWinsPerCandidate
-sns.barplot(y='Candidates', x='Chance of winning', data=datafr,ci=None)
 
-fig = pylab.gcf()
-fig.canvas.set_window_title('Galway West')
-pylab.show()
+
+printresults.main(candidateData, percentageOfWinsPerCandidate, mostCommonOutcome)

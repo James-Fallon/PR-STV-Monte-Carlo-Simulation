@@ -47,7 +47,7 @@
                                     <goal>java</goal>
                                 </goals>
                                 <configuration>
-                                    <mainClass>PollParser</mainClass>
+                                    <mainClass>BallotsParser</mainClass>
                                     <arguments>
                                         <argument>5</argument>
                                         <argument>/Users/jamesfallon/IdeaProjects/PR-STV-Software-Model/src/main/resources/ballots.csv</argument>

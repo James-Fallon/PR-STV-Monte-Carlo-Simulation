@@ -6,9 +6,6 @@ public class Ballot {
     private int id;
     private static int idCounter = 0;
 
-    //Flag that shows if the vote is an original vote or a transferred one
-    private boolean original;
-
     //List to store preferences of candidates.
     //index 0 is first choice, 1 is 2nd choice etc
     private List<Candidate> preferences;
@@ -42,21 +39,6 @@ public class Ballot {
             }
         }
         return false;
-    }
-
-    public boolean isOriginal ()
-    {
-        return original;
-    }
-
-    public void setOriginal (boolean original)
-    {
-        this.original = original;
-    }
-
-    public void removeCandidate (Candidate candidateToRemove)
-    {
-        preferences.remove(candidateToRemove);
     }
 
     @Override

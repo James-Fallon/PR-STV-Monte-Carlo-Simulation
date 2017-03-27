@@ -62,8 +62,7 @@ public class Count {
             for(Candidate candidate : candidates)
             {
                 int voteTallyFromLastRun = 0;
-                if(voteCountFromLastRun.containsKey(candidate)
-                        )
+                if(voteCountFromLastRun.containsKey(candidate))
                 {
                     voteTallyFromLastRun = voteCountFromLastRun.get(candidate);
                 }
@@ -259,39 +258,5 @@ public class Count {
             candidate.addVotes(parcelsToTransfer.get(candidate));
         }
     }
-
-    public boolean isRedistributionRequired (int surplus)
-    {
-        for(Candidate candidate : candidates)
-        {
-            if(willSurplusElectCandidate(candidate, surplus) || willSurplusMoveCandidateFromBottomPlace(candidate,surplus))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean willSurplusElectCandidate (Candidate candidate, int surplus)
-    {
-        return (candidate.getVoteCount() + surplus) >= quota;
-    }
-
-    public boolean willSurplusMoveCandidateFromBottomPlace (Candidate candidate, int surplus)
-    {
-        Collections.sort(candidates);
-
-        if(!candidates.get(0).equals(candidate))
-        {
-            return false;
-        }
-        else{
-            int newVoteCountWithSurplus = candidate.getVoteCount() + surplus;
-            return newVoteCountWithSurplus >= candidates.get(1).getVoteCount();
-        }
-
-    }
-
-    //TODO - willSurplusRecoupElectionExpenses
 
 }
