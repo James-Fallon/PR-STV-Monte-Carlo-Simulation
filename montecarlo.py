@@ -1,5 +1,5 @@
 import ballotsgenerator, printresults
-import numpy as np,csv,os.path,subprocess,operator,copy
+import numpy as np,csv,os.path,subprocess,operator,copy,argparse,random
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -9,6 +9,21 @@ import plotly.graph_objs as go
 import pylab
 import webbrowser
 from subprocess import STDOUT,PIPE
+
+
+samplesize = 515
+marginOfError = 0.028
+voteTransferDataStdDev = 0.05
+
+
+'Deal with command line arguments'
+'-------------------------------------------------------------------------------'
+parser = argparse.ArgumentParser()
+parser.add_argument('numberOfRuns', type=int,help='the number of iterations the Monte Carlo simulation should run')
+parser.add_argument('meanNumberOfBallots', type=int, help='the mean number of ballots to produce in the ballot generator')
+
+args = parser.parse_args()
+
 
 'Parse Candidate Data'
 '-------------------------------------------------------------------------------'
@@ -35,7 +50,7 @@ for party in parties:
 def generateCandidateSupportProportions():
     #Account for simple random sampling error
     #candidateSupportProportions = [np.random.normal(x, np.sqrt((x*(1-x))/samplesize)) for x in originalCandidateSupportProportions]
-    candidateSupportProportions = [np.random.normal(x, marginOfError) for x in originalCandidateSupportProportions]
+    candidateSupportProportions = [np.random.normal(x, np.sqrt((x*(1-x))/samplesize) + marginOfError/2.0) for x in originalCandidateSupportProportions]
 
     #If any of drawn values are < 0, set them to 0
     candidateSupportProportions = [x if x > 0 else 0.0 for x in candidateSupportProportions]
@@ -46,7 +61,7 @@ def generateCandidateSupportProportions():
 '-------------------------------------------------------------------------------'
 
 #Parse voteTransferData
-voteTransferDataFile = open('./src/main/resources/transfers-GalwayWest.csv', 'r')
+voteTransferDataFile = open('./src/main/resources/transfers-GalwayWestPlain.csv', 'r')
 voteTransferData = list(csv.reader(voteTransferDataFile))
 voteTransferDataFile.close()
 #Remove the header and store it for later
@@ -109,7 +124,7 @@ def generateVoteTransferProportions():
     for key in voteTransferProportionsPerCandidate:
 
         #Account for simple random sampling error
-        voteTransferProportionsPerCandidate[key][1] = [np.random.normal(x, marginOfError*2) for x in voteTransferProportionsPerCandidate[key][1]]
+        voteTransferProportionsPerCandidate[key][1] = [np.random.normal(x, voteTransferDataStdDev) for x in voteTransferProportionsPerCandidate[key][1]]
         #If any of drawn values are < 0, set them to 0.001 (np.random.choice will throw an error if theyre not)
         voteTransferProportionsPerCandidate[key][1] = [x if x > 0 else 0.001 for x in voteTransferProportionsPerCandidate[key][1]]
         #Normalise so the sum is still 1
@@ -121,21 +136,27 @@ def generateVoteTransferProportions():
 
 '-------------------------------------------------------------------------------'
 
-#samplesize = 515
-marginOfError = 0.028
-numberOfRuns = 30
-numberOfWinsPerCandidate = {candidate[0]:0 for candidate in candidateData}
+'CALCULATE NUMBER OF BALLOTS TO GENERATE'
+def calculateVoterTurnout(meanNumberOfBallots):
+    return int(round(random.gauss(meanNumberOfBallots, meanNumberOfBallots/20)))
 
+numberOfWinsPerCandidate = {candidate[0]:0 for candidate in candidateData}
 outcomeFrequencys = {}
 
-for i in range(numberOfRuns):
+print '\n-----------------------------------------------------------------'
 
+print 'Running Monte Carlo Simulation with',args.numberOfRuns,'iterations:'
+
+for i in range(args.numberOfRuns):
+
+    print '\nIteration',i+1,'\n'
     candidateSupportProportions = generateCandidateSupportProportions()
     voteTransferProportions = generateVoteTransferProportions()
 
     #Generate ballots
-    ballots = ballotsgenerator.main(candidateSupportProportions, voteTransferProportions)
+    ballotsgenerator.main(calculateVoterTurnout(args.meanNumberOfBallots),candidateSupportProportions, voteTransferProportions)
 
+    print '\nCounting ballots....\n'
     #Run the java simulation
     cmd = ['mvn','test', '-Pgalway-west']
     proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
@@ -152,6 +173,7 @@ for i in range(numberOfRuns):
         outcome.add(candidateID)
         numberOfWinsPerCandidate[candidateID] = numberOfWinsPerCandidate[candidateID]+1
 
+    print 'Result:\n',outcome,'\n'
     outcome = frozenset(outcome)
     #Add this outcome to the outcome frequencys list if its not already there
     if outcome in outcomeFrequencys.keys():
@@ -159,30 +181,35 @@ for i in range(numberOfRuns):
     else:
         outcomeFrequencys[outcome] = 1
 
-'-------------------------------------------------------------------------------'
+print 'End of Monte Carlo Simulation'
+print '-----------------------------------------------------------------'
+
+
+
+'-------------------------------------------------------------------------------\n'
 
 sorted_numberOfWinsPerCandidate = sorted(numberOfWinsPerCandidate.items(), key=operator.itemgetter(1), reverse=True)
+
+print 'Simulation Results:\n'
 print 'Chance of winning a seat:'
 
 percentageOfWinsPerCandidate = [0.0] * len(candidateData)
 for candidate in sorted_numberOfWinsPerCandidate:
     name = candidateData[int(candidate[0])][2] + " " + candidateData[int(candidate[0])][1]
     numberOfWins = float(candidate[1])
-    percentageOfWins = float((numberOfWins/float(numberOfRuns))*100.0)
+    percentageOfWins = float((numberOfWins/float(args.numberOfRuns))*100.0)
     percentageOfWinsPerCandidate[int(candidate[0])] = percentageOfWins
-    print(percentageOfWins)
     print name + ": %" + str(percentageOfWins)
 
 '-------------------------------------------------------------------------------'
 
 highestOutcomeFrequency = 0
-
 for key in outcomeFrequencys:
     if outcomeFrequencys[key] > highestOutcomeFrequency:
         highestOutcomeFrequency = outcomeFrequencys[key]
         mostCommonOutcome = key
 
-outcomeResult = "Most common outcome: \n%r\n with %r occurrences" % (mostCommonOutcome,outcomeFrequencys[mostCommonOutcome])
+outcomeResult = "Most common outcome: \n%r\n with %r occurrences" % (set(mostCommonOutcome),outcomeFrequencys[mostCommonOutcome])
 
 print outcomeResult
 
@@ -190,5 +217,6 @@ mostCommonOutcome = list(mostCommonOutcome)
 
 candidates = [x[2] + ' ' + x[1] for x in candidateData]
 
-
-printresults.main(candidateData, percentageOfWinsPerCandidate, mostCommonOutcome)
+sorted_outcomeFrequencies = sorted(outcomeFrequencys.items(), key=operator.itemgetter(1), reverse=True)
+print(sorted_outcomeFrequencies)
+printresults.main(candidateData, percentageOfWinsPerCandidate, sorted_outcomeFrequencies, 5)

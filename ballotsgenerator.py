@@ -16,6 +16,7 @@ def generateBallot(firstPreference,numberOfPreferences,voteTransferProportionsFo
 
     return ballot
 
+'GENERATE SPECIFIED NUMBER OF BALLOTS'
 def generateBallots(numberOfBallots,candidateSupportProportions, voteTransferProportions):
     ballots = []
     firstPreferences = generateFirstPreferences(numberOfBallots, candidateSupportProportions)
@@ -23,16 +24,10 @@ def generateBallots(numberOfBallots,candidateSupportProportions, voteTransferPro
         lengthOfBallot = random.randint(1, len(candidateSupportProportions))
         ballots.append(generateBallot(firstPreference,lengthOfBallot, voteTransferProportions[firstPreference]))
     return(ballots)
-def calculateVoterTurnout(meanNumberOfBallots):
-    return int(round(random.gauss(meanNumberOfBallots, meanNumberOfBallots/20)))
 
-def main(candidateSupportProportions,voteTransferProportions):
+def main(numberOfBallots, candidateSupportProportions,voteTransferProportions):
 
-    'CALCULATE VOTER TURNOUT'
-    meanNumberOfBallots = 1000
-    numberOfBallots = calculateVoterTurnout(meanNumberOfBallots)
-    print('Number of ballots to generate: ')
-    print(numberOfBallots)
+    print 'Generating',numberOfBallots,'ballots'
 
     'GENERATE THE BALLOTS'
     ballots = generateBallots(numberOfBallots, candidateSupportProportions, voteTransferProportions)
@@ -42,4 +37,3 @@ def main(candidateSupportProportions,voteTransferProportions):
     ballotsFileWriter = csv.writer(ballotsFile)
     ballotsFileWriter.writerows(ballots)
     ballotsFile.close()
-    return ballots
