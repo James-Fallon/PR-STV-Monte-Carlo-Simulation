@@ -13,7 +13,7 @@ from subprocess import STDOUT,PIPE
 
 samplesize = 515
 marginOfError = 0.028
-voteTransferDataStdDev = 0.05
+voteTransferDataStdDev = 0.025
 
 
 'Deal with command line arguments'
@@ -61,7 +61,7 @@ def generateCandidateSupportProportions():
 '-------------------------------------------------------------------------------'
 
 #Parse voteTransferData
-voteTransferDataFile = open('./src/main/resources/transfers-GalwayWestPlain.csv', 'r')
+voteTransferDataFile = open('./src/main/resources/transfers-GalwayWest_2011_EditedWith2007.csv', 'r')
 voteTransferData = list(csv.reader(voteTransferDataFile))
 voteTransferDataFile.close()
 #Remove the header and store it for later
@@ -80,25 +80,31 @@ def getWeightedNextPreferencesForCandidate(firstPrefCandidate):
     transferringParty = candidateData[int(firstPrefCandidate)][3]
     partiesToTransferTo = copy.deepcopy(parties)
 
+
     for party in partiesToTransferTo:
         partyPercentage = float(voteTransferDict[transferringParty+','+party])
-        percentagePerPartyMember = partyPercentage/float(len(candidatesPerParty[party]))
 
         candidatesInThisParty = copy.deepcopy(candidatesPerParty[party])
         if(firstPrefCandidate in candidatesInThisParty):
             candidatesInThisParty.remove(firstPrefCandidate)
 
+        sumOfCandSupport = 0.0
         for candidateInThisParty in candidatesInThisParty:
-            percentagesForRandomChoice[int(candidateInThisParty)] = percentagePerPartyMember
+            sumOfCandSupport += float(candidateData[int(candidateInThisParty)][4])
+
+        for candidateInThisParty in candidatesInThisParty:
+            candidateSupport = float(candidateData[int(candidateInThisParty)][4])
+            percentageForThisCandidate = (partyPercentage/sumOfCandSupport)*candidateSupport
+            if percentageForThisCandidate > 0:
+                percentagesForRandomChoice[int(candidateInThisParty)] = percentageForThisCandidate
+            else:
+                percentagesForRandomChoice[int(candidateInThisParty)] = 0.0001
 
     percentages = []
     for candidate in possibleCandidates:
         percentages.append(percentagesForRandomChoice[candidate])
 
     #If the sum doesn't equal 1, numpy.random.choice will throw an exception
-    #This is more than likely to occur because we are splitting percentages among each party
-    #To compensate for this we get the difference and add it to one random candidate in the list
-
     percentages = [x/sum(percentages) for x in percentages]
 
 

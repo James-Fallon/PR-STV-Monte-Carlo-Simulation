@@ -81,7 +81,7 @@ public class BallotsParser {
         }
 
 
-        System.out.println("Candidates: " + candidates.size());
+        System.out.println("\nCandidates: " + candidates.size());
         System.out.println("Ballots: " + ballots.size());
 
         //Run count

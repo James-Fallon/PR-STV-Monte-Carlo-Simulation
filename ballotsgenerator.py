@@ -10,7 +10,8 @@ def generateFirstPreferences (numberToGenerate, percentages):
 def generateBallot(firstPreference,numberOfPreferences,voteTransferProportionsForCandidate):
     ballot = []
     ballot.append(firstPreference)
-    nextPreferences = numpy.random.choice(voteTransferProportionsForCandidate[0], numberOfPreferences-1, replace=False, p=voteTransferProportionsForCandidate[1])
+    nextPreferences = numpy.random.choice(voteTransferProportionsForCandidate[0],
+     numberOfPreferences-1, replace=False, p=voteTransferProportionsForCandidate[1])
     for nextPreference in nextPreferences:
         ballot.append(int(nextPreference))
 

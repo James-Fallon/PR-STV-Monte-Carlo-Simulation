@@ -27,7 +27,7 @@ public class Count {
         //Calculate quota
         quota = (ballots.size()/(numberOfSeats+1)) +1;
 
-        System.out.println("Quota: " + quota + "\n");
+        System.out.println("Quota: " + quota);
 
 
         //Run first count
@@ -35,17 +35,6 @@ public class Count {
             Candidate firstChoice = ballot.getNextPreference();
             firstChoice.addVote(ballot);
         }
-
-        //Print first preferences
-
-        System.out.println("First Preferences:");
-        System.out.println("----------------------");
-        for(Candidate candidate : candidates)
-        {
-            System.out.println(candidate.getSurname() + ": " + candidate.getVoteCount());
-        }
-        System.out.println("----------------------");
-
 
         Map<Candidate, Integer> voteCountFromLastRun = new HashMap<>();
         int runNumber = 1;
@@ -59,8 +48,9 @@ public class Count {
 
             System.out.println("Votes per candidate:");
             System.out.println("----------------------");
-            for(Candidate candidate : candidates)
+            for(int i = candidates.size() - 1; i >= 0; i--)
             {
+                Candidate candidate = candidates.get(i);
                 int voteTallyFromLastRun = 0;
                 if(voteCountFromLastRun.containsKey(candidate))
                 {
@@ -181,8 +171,6 @@ public class Count {
         List<Ballot> transferableBallots = ballots.stream().filter(Ballot::isTransferable).collect(Collectors.toList());
 
         System.out.println("Surplus: " + surplus);
-        System.out.println("Candidate total ballots: " + ballots.size());
-        System.out.println("Transferable ballots: " + transferableBallots.size());
 
         if(surplus < transferableBallots.size())
         {
@@ -215,7 +203,7 @@ public class Count {
                 votesToTransfer.addAll(parcels.get(parcel).subList(0, numberOfVotesToTransfer));
             }
 
-            System.out.println("Transferring: " + votesToTransfer.size() + " ballots.");
+            System.out.println("Ballots to transfer: " + votesToTransfer.size());
             distributeVotes(votesToTransfer);
         }
         else {
