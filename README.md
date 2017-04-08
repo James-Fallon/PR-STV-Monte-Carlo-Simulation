@@ -1,4 +1,4 @@
-# PR-STV-Software-Model
+# PR-STV-Monte-Carlo-Simulation
 
 Monte Carlo simulation of Irish elections. Includes a Java implementation of the PR-STV voting system.
 
