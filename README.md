@@ -1,3 +1,5 @@
 # PR-STV-Software-Model
 
-Java implementation of the PR-STV voting system used in Irish elections.
+Monte Carlo simulation of Irish elections. Includes a Java implementation of the PR-STV voting system.
+
+![Settings Window](https://raw.github.com/James-Fallon/PR-STV-Software-Model/master/assets/screenshots/ScreenshotForGithub.png)
